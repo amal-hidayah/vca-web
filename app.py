@@ -695,6 +695,9 @@ def nl2br_filter(s):
 # STARTUP
 # ═══════════════════════════════════════════════════════════════
 
-if __name__ == "__main__":
+# Inisialisasi database secara otomatis (PENTING untuk produksi dengan gunicorn)
+with app.app_context():
     init_db()
+
+if __name__ == "__main__":
     app.run(debug=True, port=5000)
