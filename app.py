@@ -90,6 +90,7 @@ def build_seo_meta(title, description, *, page_type="website", image_url=None, k
 def init_db():
     """Buat tabel dan isi data awal."""
     db = sqlite3.connect(DATABASE)
+    db.row_factory = sqlite3.Row
     db.execute("PRAGMA journal_mode=WAL")
 
     # ── Tabel Kategori ───────────────────────────────────────
