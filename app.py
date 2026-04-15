@@ -132,7 +132,9 @@ def init_db():
 
     # Database Migration: Pastikan kolom 'slug' dan 'meta_desc' ada kalau database lama dipakai
     try:
-        db.execute("ALTER TABLE articles ADD COLUMN slug TEXT UNIQUE")
+        # SQLite doesn't allow ADD COLUMN with UNIQUE constraint directly.
+        db.execute("ALTER TABLE articles ADD COLUMN slug TEXT")
+        db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug)")
     except sqlite3.OperationalError:
         pass  # Kolom slug sudah ada
 
@@ -140,6 +142,11 @@ def init_db():
         db.execute("ALTER TABLE articles ADD COLUMN meta_desc TEXT")
     except sqlite3.OperationalError:
         pass  # Kolom meta_desc sudah ada
+
+    try:
+        db.execute("ALTER TABLE articles ADD COLUMN author TEXT DEFAULT 'Admin'")
+    except sqlite3.OperationalError:
+        pass  # Kolom author sudah ada
 
     # Update auto-generate slug untuk artikel yang slug-nya kosong
     empty_slug_articles = db.execute("SELECT id, title FROM articles WHERE slug IS NULL OR slug = ''").fetchall()
