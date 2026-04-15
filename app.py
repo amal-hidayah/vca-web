@@ -165,8 +165,6 @@ def init_db():
     db.execute("INSERT OR IGNORE INTO categories (slug, name) VALUES ('pallet_kayu', 'Pallet Kayu')")
     db.execute("UPDATE products SET category = 'wooden_drum' WHERE category = 'kayu'")
     
-    db.commit()
-    db.close()
     db.execute("DELETE FROM categories WHERE slug NOT IN ('semua', 'steel_drum', 'wooden_steel_drum', 'wooden_drum', 'pallet_kayu')")
 
     if db.execute("SELECT COUNT(*) FROM products").fetchone()[0] == 0:
