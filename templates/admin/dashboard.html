@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon products"><i class="fas fa-boxes-stacked"></i></div>
+        <div class="stat-info">
+            <h3>{{ product_count }}</h3>
+            <p>Total Produk</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon articles"><i class="fas fa-newspaper"></i></div>
+        <div class="stat-info">
+            <h3>{{ article_count }}</h3>
+            <p>Total Artikel</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon categories"><i class="fas fa-tags"></i></div>
+        <div class="stat-info">
+            <h3>{{ category_count }}</h3>
+            <p>Kategori</p>
+        </div>
+    </div>
+</div>
+
+<div class="quick-actions">
+    <h3><i class="fas fa-bolt"></i> Aksi Cepat</h3>
+    <div class="action-grid">
+        <a href="{{ url_for('admin_product_add') }}" class="action-card">
+            <i class="fas fa-plus-circle"></i>
+            <span>Tambah Produk</span>
+        </a>
+        <a href="{{ url_for('admin_article_add') }}" class="action-card">
+            <i class="fas fa-pen-to-square"></i>
+            <span>Tulis Artikel</span>
+        </a>
+        <a href="{{ url_for('index') }}" class="action-card" target="_blank">
+            <i class="fas fa-eye"></i>
+            <span>Lihat Website</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Kelola Produk{% endblock %}
+{% block page_title %}Kelola Produk{% endblock %}
+
+{% block content %}
+<div class="content-header-bar">
+    <p>{{ products|length }} produk ditemukan</p>
+    <a href="{{ url_for('admin_product_add') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Tambah Produk
+    </a>
+</div>
+
+<div class="table-container">
+    <table class="data-table" id="products-table">
+        <thead>
+            <tr>
+                <th width="60">Foto</th>
+                <th>Nama Produk</th>
+                <th width="120">Kategori</th>
+                <th>Deskripsi</th>
+                <th width="140">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>
+                    <div class="table-img">
+                        {% if product.image %}
+                            {% if product.image.startswith('uploads/') %}
+                            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+                            {% else %}
+                            <img src="{{ product.image }}" alt="{{ product.name }}">
+                            {% endif %}
+                        {% else %}
+                        <div class="no-img"><i class="fas fa-image"></i></div>
+                        {% endif %}
+                    </div>
+                </td>
+                <td><strong>{{ product.name }}</strong></td>
+                <td><span class="badge">{{ product.category }}</span></td>
+                <td class="text-muted">{{ product.description[:60] }}{% if product.description|length > 60 %}...{% endif %}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('admin_product_edit', product_id=product.id) }}" class="btn btn-sm btn-edit" title="Edit">
+                            <i class="fas fa-pen"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('admin_product_delete', product_id=product.id) }}" 
+                              onsubmit="return confirm('Hapus produk ini?')" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-delete" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not products %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">Belum ada produk.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

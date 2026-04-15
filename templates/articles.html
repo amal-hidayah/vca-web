@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ seo.description }}">
+    <meta name="keywords" content="{{ seo.keywords }}">
+    <title>{{ seo.title }}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background: var(--green-50); display: flex; flex-direction: column; min-height: 100vh;}
+        .page-header { background: #ffffff; padding: 120px 20px 60px; text-align: center; border-bottom: 1px solid var(--gray-200); box-shadow: 0 4px 15px rgba(0,0,0,0.02);}
+        .page-title { color: var(--gray-800); font-family: 'Oswald', sans-serif; font-size: 2.5rem; text-transform: uppercase; margin-bottom: 15px; }
+        .page-subtitle { color: var(--gray-600); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+        .articles-container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; width: 100%;}
+        
+        .article-card { border: 1px solid var(--gray-200); background: #ffffff; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: transform 0.3s; }
+        .article-card:hover { transform: translateY(-5px); }
+        
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a { color: #ffffff; text-decoration: none; font-weight: 500; font-size: 0.95rem; opacity: 0.9; transition: opacity 0.2s; }
+        .nav-links a:hover { opacity: 1; color: #a7f3d0; }
+        
+        .hamburger-menu {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .top-navbar {
+                height: auto !important;
+                padding: 10px 15px !important;
+            }
+            .top-navbar-inner {
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-wrap: wrap;
+                padding: 0 !important;
+            }
+            .brand-logo { position: relative; z-index: 1002; display: flex; align-items: center; }
+            .brand-logo img {
+                max-height: 40px !important;
+            }
+            .hamburger-menu {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                width: 32px;
+                height: 22px;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                z-index: 1002;
+                position: relative;
+                padding: 0;
+            }
+            .hamburger-menu .bar {
+                width: 100%;
+                height: 3px;
+                background-color: white;
+                border-radius: 10px;
+                transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s ease, background-color 0.3s ease;
+                transform-origin: left center;
+            }
+            .hamburger-menu.active .bar-1 {
+                transform: rotate(45deg) translate(0, -2px);
+                background-color: #a7f3d0;
+            }
+            .hamburger-menu.active .bar-2 {
+                opacity: 0;
+            }
+            .hamburger-menu.active .bar-3 {
+                transform: rotate(-45deg) translate(0, 2px);
+                background-color: #a7f3d0;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: linear-gradient(145deg, var(--green-900) 0%, var(--green-800) 100%);
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 25px;
+                visibility: hidden;
+                opacity: 0;
+                transition: visibility 0.4s, opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+                z-index: 1001;
+                padding-bottom: 0 !important;
+            }
+            .nav-links.nav-active {
+                visibility: visible;
+                opacity: 0.98;
+            }
+            .nav-links a {
+                white-space: nowrap;
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: white;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            }
+            .nav-links.nav-active a {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .nav-links.nav-active a:nth-child(1) { transition-delay: 0.1s; }
+            .nav-links.nav-active a:nth-child(2) { transition-delay: 0.15s; }
+            .nav-links.nav-active a:nth-child(3) { transition-delay: 0.2s; }
+            .nav-links.nav-active a:nth-child(4) { transition-delay: 0.25s; }
+            .nav-links.nav-active a:nth-child(5) { transition-delay: 0.3s; }
+            .nav-links.nav-active a:nth-child(6) { transition-delay: 0.35s; }
+            .nav-links.nav-active a:nth-child(7) { transition-delay: 0.4s; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="top-navbar" id="top-navbar">
+        <div class="top-navbar-inner" style="justify-content: space-between;">
+            <a href="{{ url_for('index') }}" class="brand-logo" id="brand-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="VCA Logo" style="max-height: 50px; display: block; width: auto;">
+            </a>
+            
+            <button class="hamburger-menu" id="hamburger-menu" aria-label="Toggle navigation">
+                <span class="bar bar-1"></span>
+                <span class="bar bar-2"></span>
+                <span class="bar bar-3"></span>
+            </button>
+
+            <div class="nav-links" id="nav-links">
+                <a href="{{ url_for('index') }}#beranda">Beranda</a>
+                <a href="{{ url_for('index') }}#tentang">Tentang Kami</a>
+                <a href="{{ url_for('index') }}#katalog">Katalog Haspel</a>
+                <a href="{{ url_for('index') }}#kemitraan">Kemitraan</a>
+                <a href="{{ url_for('index') }}#proses">Proses Produksi</a>
+                <a href="{{ url_for('articles_list') }}">Artikel</a>
+                <a href="{{ url_for('index') }}#kontak">Hubungi Kami</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="page-header reveal">
+        <h1 class="page-title">Semua Artikel</h1>
+        <p class="page-subtitle">Berita terbaru dan informasi mendalam seputar industri haspel kayu dan kabel.</p>
+    </header>
+
+    <main class="articles-container">
+        {% if articles %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
+            {% for article in articles %}
+            <div class="article-card reveal reveal-delay-{{ loop.index0 % 4 + 1 }}">
+                <a href="{{ url_for('article_detail', article_id=article.id) }}" style="display: block; height: 220px; overflow: hidden; position: relative;">
+                    {% if article.image %}
+                        {% if article.image.startswith('uploads/') %}
+                            <img src="{{ url_for('static', filename=article.image) }}" alt="{{ article.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <img src="{{ article.image }}" alt="{{ article.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% endif %}
+                    {% else %}
+                        <div style="width: 100%; height: 100%; background: var(--gray-100); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-image" style="color: var(--gray-400); font-size: 3rem;"></i>
+                        </div>
+                    {% endif %}
+                    <div style="position: absolute; top: 15px; right: 15px; background: var(--green-600); color: white; padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: bold; z-index: 2; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                        Berita
+                    </div>
+                </a>
+                <div style="padding: 25px; flex-grow: 1; display: flex; flex-direction: column;">
+                    <div style="font-size: 0.85rem; color: var(--gray-500); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                        <span><i class="far fa-calendar-alt"></i> {{ article.created_at[:10] if article.created_at else '-' }}</span>
+                        <i class="fas fa-circle" style="font-size: 4px; color: var(--gray-300);"></i>
+                        <span><i class="far fa-user"></i> {{ article.author or 'Admin' }}</span>
+                    </div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: 15px; line-height: 1.4; font-family: 'Oswald', sans-serif;">
+                        <a href="{{ url_for('article_detail', article_id=article.id) }}" style="color: inherit; text-decoration: none; display: block;">{{ article.title }}</a>
+                    </h3>
+                    <p style="font-size: 0.95rem; color: var(--gray-600); line-height: 1.6; margin-bottom: 20px; flex-grow: 1; font-family: 'Roboto', sans-serif;">
+                        {% set plain_content = article.content | striptags %}
+                        {{ plain_content[:150] }}...
+                    </p>
+                    <a href="{{ url_for('article_detail', article_id=article.id) }}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--green-600); font-weight: 600; text-decoration: none; font-size: 0.95rem; padding-top: 15px; border-top: 1px solid var(--gray-200);">
+                        Baca Selengkapnya <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; color: var(--gray-600); padding: 80px 20px; background: #ffffff; border-radius: var(--radius-lg); border: 1px dashed var(--gray-300);">
+            <i class="fas fa-newspaper" style="font-size: 4rem; color: var(--gray-400); margin-bottom: 20px; display: block;"></i>
+            <p style="font-size: 1.2rem;">Belum ada artikel yang dipublikasikan saat ini.</p>
+        </div>
+        {% endif %}
+    </main>
+
+    <footer id="kontak" style="background: #0f172a; color: #e2e8f0; padding: 70px 20px 20px; border-top: 5px solid var(--green-600); position: relative; overflow: hidden; margin-top: auto;">
+        <!-- Delicate Background Pattern -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.03; background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
+        
+        <div class="container" style="position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 50px; margin-bottom: 50px;">
+            
+            <!-- Company Info -->
+            <div class="reveal">
+                <div style="height: 110px; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px;">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="VCA Logo" style="max-height: 70px; filter: brightness(0) invert(1);">
+                </div>
+                <p style="color: #94a3b8; line-height: 1.7; margin-bottom: 25px; font-size: 0.95rem;">
+                    CV. Valentien Cahaya Abadi adalah produsen utama Haspel Besi (Steel Drum) dan Haspel Kayu (Wooden Drum) skala nasional yang berkomitmen pada standar kualitas dan presisi tertinggi.
+                </p>
+                <div style="display: flex; gap: 12px;">
+                    <a href="#" style="color: white; background: rgba(255,255,255,0.05); width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.1);" onmouseover="this.style.background='var(--green-600)';" onmouseout="this.style.background='rgba(255,255,255,0.05)';"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" style="color: white; background: rgba(255,255,255,0.05); width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.1);" onmouseover="this.style.background='var(--green-600)';" onmouseout="this.style.background='rgba(255,255,255,0.05)';"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: white; background: rgba(255,255,255,0.05); width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.1);" onmouseover="this.style.background='var(--green-600)';" onmouseout="this.style.background='rgba(255,255,255,0.05)';"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="reveal reveal-delay-1">
+                <div style="height: 110px; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px;">
+                    <h4 style="color: white; font-size: 1.2rem; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px; margin: 0;">Tautan Cepat</h4>
+                </div>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; font-size: 0.95rem;">
+                    <li><a href="{{ url_for('index') }}#beranda" style="color: #cbd5e1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--green-400)';" onmouseout="this.style.color='#cbd5e1';"><i class="fas fa-angle-right" style="margin-right:8px; color: var(--green-600);"></i>Beranda</a></li>
+                    <li><a href="{{ url_for('index') }}#tentang" style="color: #cbd5e1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--green-400)';" onmouseout="this.style.color='#cbd5e1';"><i class="fas fa-angle-right" style="margin-right:8px; color: var(--green-600);"></i>Tentang Kami</a></li>
+                    <li><a href="{{ url_for('index') }}#katalog" style="color: #cbd5e1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--green-400)';" onmouseout="this.style.color='#cbd5e1';"><i class="fas fa-angle-right" style="margin-right:8px; color: var(--green-600);"></i>Katalog Haspel</a></li>
+                    <li><a href="{{ url_for('index') }}#proses" style="color: #cbd5e1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--green-400)';" onmouseout="this.style.color='#cbd5e1';"><i class="fas fa-angle-right" style="margin-right:8px; color: var(--green-600);"></i>Proses Produksi</a></li>
+                    <li><a href="{{ url_for('articles_list') }}" style="color: #cbd5e1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--green-400)';" onmouseout="this.style.color='#cbd5e1';"><i class="fas fa-angle-right" style="margin-right:8px; color: var(--green-600);"></i>Semua Artikel</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact Options -->
+            <div class="reveal reveal-delay-2">
+                <div style="height: 110px; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px;">
+                    <h4 style="color: white; font-size: 1.2rem; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px; margin: 0;">Hubungi Kami</h4>
+                </div>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 20px; font-size: 0.95rem;">
+                    <li style="display: flex; gap: 15px; align-items: flex-start;">
+                        <i class="fas fa-map-marker-alt" style="color: var(--green-500); font-size: 1.3rem; margin-top: 3px;"></i>
+                        <span style="color: #cbd5e1; line-height: 1.7;">Jl. Gading Kirana Timur A.11/15<br>Kelapa Gading Timur, Kec. Kelapa Gading<br>Jakarta Utara, DKI Jakarta 14240</span>
+                    </li>
+                    <li style="display: flex; gap: 15px; align-items: center;">
+                        <i class="fab fa-whatsapp" style="color: var(--green-500); font-size: 1.3rem;"></i>
+                        <a href="https://wa.me/6281285525858" target="_blank" style="color: #cbd5e1; text-decoration: none; transition: color 0.3s; font-weight: bold;" onmouseover="this.style.color='var(--green-400)';" onmouseout="this.style.color='#cbd5e1';">0812 8552 5858</a>
+                    </li>
+                    <li style="display: flex; gap: 15px; align-items: center;">
+                        <i class="fas fa-envelope" style="color: var(--green-500); font-size: 1.3rem;"></i>
+                        <a href="mailto:valentiencahayaabadi@gmail.com" style="color: #cbd5e1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--green-400)';" onmouseout="this.style.color='#cbd5e1';">valentiencahayaabadi@gmail.com</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 25px; text-align: center; color: #64748b; font-size: 0.9rem; position: relative; z-index: 2;">
+            <p>&copy; 2026 CV. Valentien Cahaya Abadi. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburger-menu');
+            const navLinks = document.getElementById('nav-links');
+
+            if(hamburgerBtn && navLinks) {
+                hamburgerBtn.addEventListener('click', function() {
+                    hamburgerBtn.classList.toggle('active');
+                    navLinks.classList.toggle('nav-active');
+                    document.body.style.overflow = navLinks.classList.contains('nav-active') ? 'hidden' : '';
+                });
+
+                // Close menu when clicking a link
+                const links = navLinks.querySelectorAll('a');
+                links.forEach(link => {
+                    link.addEventListener('click', () => {
+                        hamburgerBtn.classList.remove('active');
+                        navLinks.classList.remove('nav-active');
+                        document.body.style.overflow = '';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

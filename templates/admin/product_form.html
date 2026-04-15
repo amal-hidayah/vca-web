@@ -1,0 +1,103 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ 'Edit Produk' if product else 'Tambah Produk' }}{% endblock %}
+{% block page_title %}{{ 'Edit Produk' if product else 'Tambah Produk Baru' }}{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="POST" enctype="multipart/form-data" 
+          action="{{ url_for('admin_product_edit', product_id=product.id) if product else url_for('admin_product_add') }}">
+        
+        <div class="form-grid">
+            <div class="form-left">
+                <div class="form-group">
+                    <label for="name">Nama Produk <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" value="{{ product.name if product else '' }}" required
+                           placeholder="Contoh: Haspel Kayu Standar">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Kategori <span class="required">*</span></label>
+                    <select id="category" name="category" required>
+                        <option value="">-- Pilih Kategori --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {{ 'selected' if product and product.category == cat.slug else '' }}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Deskripsi Singkat</label>
+                    <input type="text" id="description" name="description" 
+                           value="{{ product.description if product else '' }}"
+                           placeholder="Contoh: Ukuran: 120cm x 80cm | Bahan: Kayu Keras">
+                </div>
+
+                <div class="form-group">
+                    <label for="detail">Detail Produk</label>
+                    <textarea id="detail" name="detail" rows="5" 
+                              placeholder="Tulis deskripsi lengkap produk...">{{ product.detail if product else '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="form-right">
+                <div class="form-group">
+                    <label>Foto Produk</label>
+                    <div class="image-preview" id="image-preview">
+                        {% if product and product.image %}
+                            {% if product.image.startswith('uploads/') %}
+                            <img src="{{ url_for('static', filename=product.image) }}" alt="Preview" id="preview-img">
+                            {% else %}
+                            <img src="{{ product.image }}" alt="Preview" id="preview-img">
+                            {% endif %}
+                        {% else %}
+                        <div class="preview-placeholder" id="preview-placeholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Upload foto produk</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="image_file"><i class="fas fa-upload"></i> Upload File</label>
+                    <input type="file" id="image_file" name="image_file" accept="image/*" onchange="previewFile(this)">
+                    <small class="form-hint">Format: JPG, PNG, GIF, WEBP. Maks 8MB</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="image_url"><i class="fas fa-link"></i> Atau URL Gambar</label>
+                    <input type="text" id="image_url" name="image_url" 
+                           value="{{ product.image if product and product.image and not product.image.startswith('uploads/') else '' }}"
+                           placeholder="https://example.com/image.jpg">
+                    <small class="form-hint">Kosongkan jika upload file</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_products') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Batal
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> {{ 'Update Produk' if product else 'Simpan Produk' }}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function previewFile(input) {
+    const preview = document.getElementById('image-preview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" id="preview-img">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}
