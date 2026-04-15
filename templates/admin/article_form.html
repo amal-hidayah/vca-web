@@ -17,6 +17,19 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="slug">URL Slug <span class="text-muted">(SEO Opsional)</span></label>
+                    <input type="text" id="slug" name="slug" value="{{ article.slug if article else '' }}"
+                           placeholder="contoh: judul-kabel-industri">
+                    <small>Dikosongkan akan generate otomatis dari judul</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="meta_desc">SEO Meta Description <span class="text-muted">(Max 160 Karakter)</span></label>
+                    <textarea id="meta_desc" name="meta_desc" rows="2" 
+                              placeholder="Cuplikan singkat yang akan tampil di Google Search...">{{ article.meta_desc if article else '' }}</textarea>
+                </div>
+
+                <div class="form-group">
                     <label for="author">Penulis</label>
                     <input type="text" id="author" name="author" value="{{ article.author if article else 'Admin' }}"
                            placeholder="Nama penulis">
@@ -63,6 +76,14 @@
                 </div>
             </div>
         </div>
+        
+        <div class="form-full" style="margin-top: 20px;">
+            <div class="form-group">
+                <label for="content">Isi Artikel (SEO Rich Text) <span class="required">*</span></label>
+                <textarea id="content" name="content" rows="15"
+                            placeholder="Tulis artikel di sini...">{{ article.content if article else '' }}</textarea>
+            </div>
+        </div>
 
         <div class="form-actions">
             <a href="{{ url_for('admin_articles') }}" class="btn btn-secondary">
@@ -87,4 +108,16 @@ function previewFile(input) {
     }
 }
 </script>
-{% endblock %}
+
+<!-- Tambahkan CDN TinyMCE (gratis/no-api-key) untuk Editor SEO HTML -->
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    tinymce.init({
+        selector: '#content',
+        height: 500,
+        plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
+        toolbar_mode: 'floating',
+        toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }'
+    });
+</script>

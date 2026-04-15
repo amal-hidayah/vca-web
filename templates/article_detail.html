@@ -215,7 +215,7 @@
             </div>
 
             <div class="article-body">
-                {{ article.content|nl2br|safe }}
+                {{ article.content | safe }}
             </div>
 
             {% if related_articles %}
@@ -223,7 +223,7 @@
                 <h2><i class="fas fa-newspaper"></i> Artikel Terkait</h2>
                 <div class="article-list">
                     {% for item in related_articles %}
-                    <a href="{{ url_for('article_detail', article_id=item.id) }}" class="article-card">
+                    <a href="{{ url_for('article_detail', slug=item.slug) }}" class="article-card">
                         {% if item.image %}
                         <div class="article-thumb">
                             {% if item.image.startswith('uploads/') %}

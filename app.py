@@ -1,6 +1,8 @@
 import sqlite3
 import os
+import re
 import uuid
+import unicodedata
 from functools import wraps
 from flask import (
     Flask, render_template, request, g, redirect,
@@ -11,7 +13,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = "haspelcorp-secret-key-2026"
 
-SITE_NAME = "PT Valentiencahayaabadi"
+SITE_NAME = "CV VALENTIEN CAHAYA ABADI"
 SITE_TAGLINE = "Produsen Steel Drum & Wooden Drum Kualitas Terbaik"
 ALLOWED_CATALOG_CATEGORIES = {"semua", "steel_drum", "wooden_steel_drum", "wooden_drum", "pallet_kayu"}
 
@@ -66,6 +68,12 @@ def save_upload(file):
         return f"uploads/{filename}"
     return None
 
+def slugify(value):
+    """Membuat slug URL yang aman dari string (Judul -> judul-artikel-123)."""
+    value = unicodedata.normalize('NFKD', str(value)).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    return re.sub(r'[-\s]+', '-', value).strip('-_')
+
 
 def build_seo_meta(title, description, *, page_type="website", image_url=None, keywords=None):
     """Bangun metadata SEO untuk template."""
@@ -112,12 +120,31 @@ def init_db():
         CREATE TABLE IF NOT EXISTS articles (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             title       TEXT    NOT NULL,
+            slug        TEXT    UNIQUE,
             content     TEXT    NOT NULL,
+            meta_desc   TEXT,
             image       TEXT,
             author      TEXT    DEFAULT 'Admin',
             created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    # Database Migration: Pastikan kolom 'slug' dan 'meta_desc' ada kalau database lama dipakai
+    try:
+        db.execute("ALTER TABLE articles ADD COLUMN slug TEXT UNIQUE")
+    except sqlite3.OperationalError:
+        pass  # Kolom slug sudah ada
+
+    try:
+        db.execute("ALTER TABLE articles ADD COLUMN meta_desc TEXT")
+    except sqlite3.OperationalError:
+        pass  # Kolom meta_desc sudah ada
+
+    # Update auto-generate slug untuk artikel yang slug-nya kosong
+    empty_slug_articles = db.execute("SELECT id, title FROM articles WHERE slug IS NULL OR slug = ''").fetchall()
+    for art in empty_slug_articles:
+        _slug = slugify(art['title'])
+        db.execute("UPDATE articles SET slug = ? WHERE id = ?", (_slug, art['id']))
 
     # ── Seed data (hanya kalau kosong) ───────────────────────
     if db.execute("SELECT COUNT(*) FROM categories").fetchone()[0] == 0:
@@ -157,14 +184,18 @@ def init_db():
     if db.execute("SELECT COUNT(*) FROM articles").fetchone()[0] == 0:
         articles = [
             ("Mengenal Jenis-Jenis Haspel Kayu untuk Industri Kabel",
-             "Haspel kayu adalah alat penting dalam industri kabel. Ada beberapa jenis haspel kayu yang umum digunakan, mulai dari haspel kayu racuk, haspel kayu mahoni, hingga haspel plywood. Masing-masing memiliki kelebihan tersendiri tergantung kebutuhan dan jenis kabel yang akan digulung.\n\nHaspel kayu racuk cocok untuk penggunaan lokal dengan harga yang lebih ekonomis. Sementara haspel kayu mahoni lebih tahan lama dan biasa digunakan untuk kabel-kabel berat. Haspel plywood menjadi pilihan untuk kebutuhan yang memerlukan bobot ringan namun tetap kuat.",
+             "mengenal-jenis-jenis-haspel-kayu-untuk-industri-kabel",
+             "<h2>Peran Penting Haspel Kayu</h2><p>Haspel kayu adalah alat krusial dalam lini masa industri kabel...</p>",
+             "Pelajari macam-macam haspel kayu seperti racuk, mahoni, dan plywood untuk kebutuhan penggulungan kabel proyek Anda.",
              None, "Admin"),
             ("Sertifikasi ISPM #15: Pentingnya untuk Ekspor",
-               "ISPM #15 (International Standards for Phytosanitary Measures No. 15) adalah standar internasional yang mengatur perlakuan terhadap kemasan kayu yang digunakan dalam perdagangan internasional. Tujuannya adalah untuk mencegah penyebaran hama dan penyakit tanaman melalui kemasan kayu.\n\nProduk haspel kayu kami tersedia dalam versi bersertifikat ISPM #15 dengan perlakuan Heat Treatment (HT) atau Methyl Bromide (MB), sehingga lebih siap untuk kebutuhan distribusi dan proyek ekspor.",
+             "sertifikasi-ispm-15-pentingnya-untuk-ekspor",
+             "<h2>Apa Itu ISPM #15?</h2><p>ISPM #15 mengatur perlakuan khusus terhadap kemasan kayu ekspor...</p>",
+             "Informasi lengkap tentang standar ISPM #15 dan perlakuan HT/MB untuk kemasan kayu ekspor internasional.",
              None, "Admin"),
         ]
         db.executemany(
-            "INSERT INTO articles (title, content, image, author) VALUES (?, ?, ?, ?)",
+            "INSERT INTO articles (title, slug, content, meta_desc, image, author) VALUES (?, ?, ?, ?, ?, ?)",
             articles,
         )
 
@@ -273,24 +304,24 @@ def index():
     # Ambil artikel untuk tab info
     articles = db.execute("SELECT * FROM articles ORDER BY created_at DESC LIMIT 6").fetchall()
 
-    seo_title = f"{SITE_NAME} - {SITE_TAGLINE}"
+    seo_title = f"Produsen Haspel & Drum Kabel Industri | {SITE_NAME}"
     seo_description = (
-        "Produsen haspel kayu untuk industri kabel: layanan custom ukuran, standar ISPM 15, "
-        "dan pengiriman untuk kebutuhan proyek lokal maupun ekspor."
+        "CV VALENTIEN CAHAYA ABADI adalah produsen haspel dan drum kabel industri terpercaya. "
+        "Kami memproduksi perlengkapan kabel seperti steel drum, wooden drum, dan pallet kayu bersertifikat berkualitas ekspor."
     )
     if tab == "info":
         seo_title = f"Informasi Perusahaan & Artikel - {SITE_NAME}"
     if search_query:
         seo_title = f"Hasil Pencarian '{search_query}' - {SITE_NAME}"
         seo_description = (
-            f"Temukan produk haspel kayu terkait '{search_query}' dari {SITE_NAME}. "
+            f"Temukan produk haspel kabel industri terkait '{search_query}' dari {SITE_NAME}. "
             "Melayani kebutuhan industri kabel dengan kualitas terjaga."
         )
 
     seo_meta = build_seo_meta(
         seo_title,
         seo_description,
-        keywords="haspel kayu, produsen haspel kayu, haspel kayu ispm 15, pabrik haspel indonesia",
+        keywords="Produsen haspel, Drum kabel industri, Pabrik steel drum, Produsen wooden drum, Pallet kayu, Haspel kabel berkualitas, Gulungan kabel industri, CV VALENTIEN CAHAYA ABADI",
     )
 
     return render_template(
@@ -320,19 +351,71 @@ def articles_list():
     return render_template("articles.html", articles=articles, seo=seo_meta)
 
 
-@app.route("/artikel/<int:article_id>")
-def article_detail(article_id):
+@app.route("/robots.txt")
+def robots_txt():
+    content = f"""User-agent: *
+Disallow: /admin/
+Allow: /
+Sitemap: {request.url_root}sitemap.xml
+"""
+    return content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
     db = get_db()
-    article = db.execute("SELECT * FROM articles WHERE id = ?", (article_id,)).fetchone()
+    
+    # 1. Halaman Utama & Statis
+    urls = [
+        {"loc": url_for("index", _external=True), "lastmod": "2026-04-16", "priority": "1.0"},
+        {"loc": url_for("articles_list", _external=True), "lastmod": "2026-04-16", "priority": "0.8"}
+    ]
+    
+    # 2. Halaman Dinamis: Tabel Articles (Artikel Berita/Info)
+    articles = db.execute("SELECT slug, id, created_at FROM articles").fetchall()
+    for art in articles:
+        date_str = art["created_at"].split(" ")[0] if art["created_at"] else "2026-04-16"
+        urls.append({
+            "loc": url_for("article_detail", slug=art["slug"] if art["slug"] else str(art["id"]), _external=True),
+            "lastmod": date_str,
+            "priority": "0.8"
+        })
+        
+    # 3. Outputkan format standar Google XML
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for u in urls:
+        # Melakukan escaping pada URL agar aman
+        safe_loc = u["loc"].replace("&", "&amp;").replace("'", "&apos;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+        xml_content += f'  <url>\n    <loc>{safe_loc}</loc>\n    <lastmod>{u["lastmod"]}</lastmod>\n    <priority>{u["priority"]}</priority>\n  </url>\n'
+    xml_content += '</urlset>'
+    
+    return xml_content, 200, {'Content-Type': 'application/xml'}
+
+
+@app.route("/artikel/<slug>")
+def article_detail(slug):
+    db = get_db()
+    article = db.execute("SELECT * FROM articles WHERE slug = ?", (slug,)).fetchone()
+    
+    # Fallback to ID for backward compatibility
+    if not article and slug.isdigit():
+        article = db.execute("SELECT * FROM articles WHERE id = ?", (slug,)).fetchone()
+        if article and article["slug"]:
+             return redirect(url_for("article_detail", slug=article["slug"]), code=301)
+            
     if not article:
         flash("Artikel tidak ditemukan.", "error")
         return redirect(url_for("index"))
 
     related_articles = db.execute(
-        "SELECT * FROM articles WHERE id != ? ORDER BY created_at DESC LIMIT 3", (article_id,)
+        "SELECT * FROM articles WHERE id != ? ORDER BY created_at DESC LIMIT 3", (article["id"],)
     ).fetchall()
 
-    summary = (article["content"] or "").replace("\n", " ").strip()
+    summary = article["meta_desc"] if article["meta_desc"] else (
+        (article["content"] or "").replace("\n", " ").strip()[:160]
+    )
+    
     seo_meta = build_seo_meta(
         f"{article['title']} - {SITE_NAME}",
         summary[:160] if summary else "Artikel terbaru seputar haspel kayu untuk industri kabel.",
@@ -508,9 +591,14 @@ def admin_article_add():
     if request.method == "POST":
         db = get_db()
         title = request.form.get("title", "").strip()
+        slug_input = request.form.get("slug", "").strip()
         content = request.form.get("content", "").strip()
+        meta_desc = request.form.get("meta_desc", "").strip()
         author = request.form.get("author", "Admin").strip()
         image_url = request.form.get("image_url", "").strip()
+
+        # Otomatis buat slug kalau kosong
+        final_slug = slugify(slug_input) if slug_input else slugify(title)
 
         file = request.files.get("image_file")
         if file and file.filename:
@@ -521,13 +609,16 @@ def admin_article_add():
         if not title or not content:
             flash("Judul dan konten wajib diisi.", "error")
         else:
-            db.execute(
-                "INSERT INTO articles (title, content, image, author) VALUES (?, ?, ?, ?)",
-                (title, content, image_url or None, author),
-            )
-            db.commit()
-            flash("Artikel berhasil dipublikasikan!", "success")
-            return redirect(url_for("admin_articles"))
+            try:
+                db.execute(
+                    "INSERT INTO articles (title, slug, content, meta_desc, image, author) VALUES (?, ?, ?, ?, ?, ?)",
+                    (title, final_slug, content, meta_desc, image_url or None, author),
+                )
+                db.commit()
+                flash("Artikel berhasil dipublikasikan!", "success")
+                return redirect(url_for("admin_articles"))
+            except sqlite3.IntegrityError:
+                flash("URL Slug sudah ada/dipakai. Silakan ubah sedikit.", "error")
 
     return render_template("admin/article_form.html", article=None)
 
@@ -544,9 +635,13 @@ def admin_article_edit(article_id):
 
     if request.method == "POST":
         title = request.form.get("title", "").strip()
+        slug_input = request.form.get("slug", "").strip()
         content = request.form.get("content", "").strip()
+        meta_desc = request.form.get("meta_desc", "").strip()
         author = request.form.get("author", "Admin").strip()
         image_url = request.form.get("image_url", "").strip()
+
+        final_slug = slugify(slug_input) if slug_input else slugify(title)
 
         file = request.files.get("image_file")
         if file and file.filename:
@@ -560,13 +655,16 @@ def admin_article_edit(article_id):
         if not title or not content:
             flash("Judul dan konten wajib diisi.", "error")
         else:
-            db.execute(
-                "UPDATE articles SET title=?, content=?, image=?, author=? WHERE id=?",
-                (title, content, image_url, author, article_id),
-            )
-            db.commit()
-            flash("Artikel berhasil diupdate!", "success")
-            return redirect(url_for("admin_articles"))
+            try:
+                db.execute(
+                    "UPDATE articles SET title=?, slug=?, content=?, meta_desc=?, image=?, author=? WHERE id=?",
+                    (title, final_slug, content, meta_desc, image_url, author, article_id),
+                )
+                db.commit()
+                flash("Artikel berhasil diupdate!", "success")
+                return redirect(url_for("admin_articles"))
+            except sqlite3.IntegrityError:
+                flash("URL Slug sudah dipakai artikel lain.", "error")
 
     return render_template("admin/article_form.html", article=article)
 
