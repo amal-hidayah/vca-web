@@ -190,23 +190,24 @@ def init_db():
             products,
         )
 
-    if db.execute("SELECT COUNT(*) FROM articles").fetchone()[0] == 0:
-        articles = [
-            ("Mengenal Jenis-Jenis Haspel Kayu untuk Industri Kabel",
-             "mengenal-jenis-jenis-haspel-kayu-untuk-industri-kabel",
-             "<h2>Peran Penting Haspel Kayu</h2><p>Haspel kayu adalah alat krusial dalam lini masa industri kabel...</p>",
-             "Pelajari macam-macam haspel kayu seperti racuk, mahoni, dan plywood untuk kebutuhan penggulungan kabel proyek Anda.",
-             None, "Admin"),
-            ("Sertifikasi ISPM #15: Pentingnya untuk Ekspor",
-             "sertifikasi-ispm-15-pentingnya-untuk-ekspor",
-             "<h2>Apa Itu ISPM #15?</h2><p>ISPM #15 mengatur perlakuan khusus terhadap kemasan kayu ekspor...</p>",
-             "Informasi lengkap tentang standar ISPM #15 dan perlakuan HT/MB untuk kemasan kayu ekspor internasional.",
-             None, "Admin"),
-        ]
-        db.executemany(
-            "INSERT INTO articles (title, slug, content, meta_desc, image, author) VALUES (?, ?, ?, ?, ?, ?)",
-            articles,
-        )
+    # Matikan auto-insert artikel agar jika dihapus semua, tidak muncul lagi
+    # if db.execute("SELECT COUNT(*) FROM articles").fetchone()[0] == 0:
+    #     articles = [
+    #         ("Mengenal Jenis-Jenis Haspel Kayu untuk Industri Kabel",
+    #          "mengenal-jenis-jenis-haspel-kayu-untuk-industri-kabel",
+    #          "<h2>Peran Penting Haspel Kayu</h2><p>Haspel kayu adalah alat krusial dalam lini masa industri kabel...</p>",
+    #          "Pelajari macam-macam haspel kayu seperti racuk, mahoni, dan plywood untuk kebutuhan penggulungan kabel proyek Anda.",
+    #          None, "Admin"),
+    #         ("Sertifikasi ISPM #15: Pentingnya untuk Ekspor",
+    #          "sertifikasi-ispm-15-pentingnya-untuk-ekspor",
+    #          "<h2>Apa Itu ISPM #15?</h2><p>ISPM #15 mengatur perlakuan khusus terhadap kemasan kayu ekspor...</p>",
+    #          "Informasi lengkap tentang standar ISPM #15 dan perlakuan HT/MB untuk kemasan kayu ekspor internasional.",
+    #          None, "Admin"),
+    #     ]
+    #     db.executemany(
+    #         "INSERT INTO articles (title, slug, content, meta_desc, image, author) VALUES (?, ?, ?, ?, ?, ?)",
+    #         articles,
+    #     )
 
     # ── Move Generated Images & Insert Wooden Steel Drum ────────
     import shutil
