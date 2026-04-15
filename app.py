@@ -337,7 +337,7 @@ def index():
     )
 
 
-@app.route("/artikel")
+@app.route("/artikel", strict_slashes=False)
 def articles_list():
     db = get_db()
     articles = db.execute("SELECT * FROM articles ORDER BY created_at DESC").fetchall()
