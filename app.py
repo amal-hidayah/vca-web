@@ -163,6 +163,9 @@ def init_db():
     db.execute("INSERT OR IGNORE INTO categories (slug, name) VALUES ('wooden_drum', 'Wooden Drum')")
     db.execute("INSERT OR IGNORE INTO categories (slug, name) VALUES ('pallet_kayu', 'Pallet Kayu')")
     db.execute("UPDATE products SET category = 'wooden_drum' WHERE category = 'kayu'")
+    
+    db.commit()
+    db.close()
     db.execute("DELETE FROM categories WHERE slug NOT IN ('semua', 'steel_drum', 'wooden_steel_drum', 'wooden_drum', 'pallet_kayu')")
 
     if db.execute("SELECT COUNT(*) FROM products").fetchone()[0] == 0:
@@ -696,8 +699,11 @@ def nl2br_filter(s):
 # ═══════════════════════════════════════════════════════════════
 
 # Inisialisasi database secara otomatis (PENTING untuk produksi dengan gunicorn)
-with app.app_context():
-    init_db()
+try:
+    with app.app_context():
+        init_db()
+except sqlite3.OperationalError as e:
+    print(f"Bisa diabaikan - Database sedang dikunci worker lain: {e}")
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
