@@ -83,7 +83,7 @@ def build_seo_meta(title, description, *, page_type="website", image_url=None, k
         "keywords": keywords or "steel drum, wooden steel drum, wooden drum, pallet kayu, pabrik drum kabel",
         "canonical": request.url.replace('http://', 'https://'),
         "og_type": page_type,
-        "og_image": (image_url or url_for("static", filename="nature_hero.webp", _external=True)).replace('http://', 'https://'),
+        "og_image": (image_url or url_for("static", filename="logo.png", _external=True)).replace('http://', 'https://'),
     }
 
 
