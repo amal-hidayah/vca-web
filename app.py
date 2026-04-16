@@ -6,7 +6,7 @@ import unicodedata
 from functools import wraps
 from flask import (
     Flask, render_template, request, g, redirect,
-    url_for, flash, session,
+    url_for, flash, session, send_from_directory
 )
 from werkzeug.utils import secure_filename
 
@@ -360,6 +360,11 @@ def articles_list():
     
     return render_template("articles.html", articles=articles, seo=seo_meta)
 
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.png', mimetype='image/png')
 
 @app.route("/robots.txt")
 def robots_txt():
