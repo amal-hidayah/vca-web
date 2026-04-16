@@ -235,7 +235,10 @@
                         {% endif %}
                         <div class="article-info">
                             <h3>{{ item.title }}</h3>
-                            <p>{{ item.content[:120] }}{% if item.content|length > 120 %}...{% endif %}</p>
+                            <p>
+                                {% set plain_content = item.content | striptags %}
+                                {{ plain_content[:120] }}{% if plain_content|length > 120 %}...{% endif %}
+                            </p>
                             <span class="article-meta">
                                 <i class="fas fa-calendar"></i> {{ item.created_at[:10] if item.created_at else '' }}
                             </span>
