@@ -81,9 +81,9 @@ def build_seo_meta(title, description, *, page_type="website", image_url=None, k
         "title": title,
         "description": description,
         "keywords": keywords or "steel drum, wooden steel drum, wooden drum, pallet kayu, pabrik drum kabel",
-        "canonical": request.url,
+        "canonical": request.url.replace('http://', 'https://'),
         "og_type": page_type,
-        "og_image": image_url or url_for("static", filename="nature_hero.webp", _external=True),
+        "og_image": (image_url or url_for("static", filename="nature_hero.webp", _external=True)).replace('http://', 'https://'),
     }
 
 
@@ -363,10 +363,11 @@ def articles_list():
 
 @app.route("/robots.txt")
 def robots_txt():
+    sitemap_url = f"{request.url_root}sitemap.xml".replace('http://', 'https://')
     content = f"""User-agent: *
 Disallow: /admin/
 Allow: /
-Sitemap: {request.url_root}sitemap.xml
+Sitemap: {sitemap_url}
 """
     return content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
@@ -397,6 +398,8 @@ def sitemap_xml():
     for u in urls:
         # Melakukan escaping pada URL agar aman
         safe_loc = u["loc"].replace("&", "&amp;").replace("'", "&apos;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+        # Memaksa format HTTPS untuk menghindari masalah pada Google Search Console
+        safe_loc = safe_loc.replace('http://', 'https://')
         xml_content += f'  <url>\n    <loc>{safe_loc}</loc>\n    <lastmod>{u["lastmod"]}</lastmod>\n    <priority>{u["priority"]}</priority>\n  </url>\n'
     xml_content += '</urlset>'
     
@@ -431,7 +434,7 @@ def article_detail(slug):
         summary[:160] if summary else "Artikel terbaru seputar haspel kayu untuk industri kabel.",
         page_type="article",
         image_url=(
-            url_for("static", filename=article["image"], _external=True)
+            url_for("static", filename=article["image"], _external=True).replace('http://', 'https://')
             if article["image"] and article["image"].startswith("uploads/")
             else article["image"]
         ),
